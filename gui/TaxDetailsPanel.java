@@ -1,5 +1,7 @@
 package gui;
 
+import logic.TaxCalculator;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
@@ -8,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class TaxDetailsPanel extends JPanel {
+    private TaxCalculator taxCalculator;
 
     public TaxDetailsPanel() {
         setLayout(new BorderLayout());
@@ -22,15 +25,17 @@ public class TaxDetailsPanel extends JPanel {
         add(titleLabel, BorderLayout.NORTH);
 
         // Personal income tax details table
+        long grossSalary = 20000000;
+        this.taxCalculator = new TaxCalculator(grossSalary);
         String[][] taxData = {
-                {"GROSS Salary", "20,000,000"},
-                {"Social Insurance (8%)", "1,600,000"},
-                {"Health Insurance (1.5%)", "300,000"},
-                {"Unemployment Insurance (1%)", "200,000"},
-                {"Pre-tax Income", "17,900,000"},
-                {"Personal Deduction", "11,000,000"},
-                {"Taxable Income", "6,900,000"},
-                {"Personal Income Tax (*)", "440,000"}
+                {"GROSS Salary", String.format("%,d", grossSalary)},
+                {"Social Insurance (8%)", String.format("%,d", taxCalculator.getSocialInsurance())},
+                {"Health Insurance (1.5%)", String.format("%,d", taxCalculator.getHealthInsurance())},
+                {"Unemployment Insurance (1%)", String.format("%,d", taxCalculator.getUnemploymentInsurance())},
+                {"Pre-tax Income", String.format("%,d", taxCalculator.getPreTaxIncome())},
+                {"Personal Deduction", String.format("%,d", taxCalculator.getPersonalDeductions())},
+                {"Taxable Income", String.format("%,d", taxCalculator.getTaxableIncome())},
+                {"Personal Income Tax (*)", String.format("%,d", taxCalculator.getFinalTax())}
         };
         String[] columnNames = {"Description", "Amount (VND)"};
         JTable taxTable = new JTable(taxData, columnNames) {
@@ -70,14 +75,15 @@ public class TaxDetailsPanel extends JPanel {
         scrollPane.setPreferredSize(new Dimension(600, 220)); // Remove borders to eliminate white spaces
 
         // Tax rate details table
+        long[] taxBrackets = taxCalculator.calculateTaxBrackets();
         String[][] rateData = {
-                {"Up to 5 million VND", "5%", "0"},
-                {"Over 5 million VND to 10 million VND", "10%", "0"},
-                {"Over 10 million VND to 18 million VND", "15%", "0"},
-                {"Over 18 million VND to 32 million VND", "20%", "0"},
-                {"Over 32 million VND to 52 million VND", "25%", "0"},
-                {"Over 52 million VND to 80 million VND", "30%", "0"},
-                {"Over 80 million VND", "35%", "0"}
+                {"Up to 5 million VND", "5%", String.format("%,d", taxBrackets[0])},
+                {"Over 5 million VND to 10 million VND", "10%", String.format("%,d", taxBrackets[1])},
+                {"Over 10 million VND to 18 million VND", "15%", String.format("%,d", taxBrackets[2])},
+                {"Over 18 million VND to 32 million VND", "20%", String.format("%,d", taxBrackets[3])},
+                {"Over 32 million VND to 52 million VND", "25%", String.format("%,d", taxBrackets[4])},
+                {"Over 52 million VND to 80 million VND", "30%", String.format("%,d", taxBrackets[5])},
+                {"Over 80 million VND", "35%", String.format("%,d", taxBrackets[6])}
         };
         String[] rateColumnNames = {"Tax Bracket", "Tax Rate", "Amount Due"};
         JTable rateTable = new JTable(rateData, rateColumnNames) {
